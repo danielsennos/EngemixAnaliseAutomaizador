@@ -1,0 +1,113 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Data.OleDb;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using OfficeOpenXml;
+
+namespace EngemixAnaliseAutomaizador
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void InserirArquivo(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+
+            openFileDialog.InitialDirectory = "c:\\";
+            openFileDialog.Filter = "Excel Files (*.xlsx)|*.xlsx|All files (*.*)|*.*";
+            openFileDialog.FilterIndex = 1;
+            openFileDialog.RestoreDirectory = true;
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                textfilenameselect.Text = openFileDialog.FileName;
+            }
+
+            textboxlog.Text = $"Arquivo selecionado: {openFileDialog.FileName}";
+        }
+        private void ProcessarArquivo(object sender, EventArgs e)
+        {
+            ConnectionManager con = new ConnectionManager();
+
+            var ColunaTkc = 0;
+            var ColunaData = 0;
+            var ColunaCodigoCB = 0;
+            var dataTKC_AnaliseINT = "0";
+            var CodigoCB_AnaliseINT = "0";
+            var numTKC_AnaliseINT = "0";
+            var ColunaStatus = 0;
+
+            //Trata as informações do arquivo selecionado
+            FileInfo fileInfo = new FileInfo(textfilenameselect.Text);
+            ExcelPackage xlPackage = new ExcelPackage(fileInfo);
+
+            //Percorre as abas da planilha
+            foreach (ExcelWorksheet sheet in xlPackage.Workbook.Worksheets)
+            {
+                //Verifica se a aba a ser processada é a AnaliseINT
+                if (sheet.Name == "AnaliseINT")
+                {
+                    textboxlog.AppendText("\n" + "\n" + "Processando Aba:" + sheet.Name);
+
+                    //Percorre as colunas da aba da planilha para obter o indice das colunas a serem usadas
+                    for (int column = 1; column <= sheet.Dimension.Columns; column++)
+                    {
+                        if(sheet.Cells[1, column].Text == "Código")
+                        {
+                            ColunaCodigoCB = column;
+                        }
+                        else if (sheet.Cells[1, column].Text == "TIQUETE")
+                        {
+                            ColunaTkc = column;
+                        }
+                        else if (sheet.Cells[1, column].Text == "Data")
+                        {
+                            ColunaData = column;
+                        } else if (sheet.Cells[1, column].Text == "Status")
+                        {
+                            ColunaStatus = column;
+                        }
+                    }
+
+                    //Percorre as linhas fazendo a lógica de análise linha a linha
+                    for (int row = 2; row <= sheet.Dimension.Rows; row++)
+                    {
+                        //Verifica se a célula já não está preenchida para não sobrescrever a análise
+                        if (sheet.Cells[row, ColunaStatus].Text == "") {
+                            CodigoCB_AnaliseINT = sheet.Cells[row, ColunaCodigoCB].Text;
+                            numTKC_AnaliseINT = sheet.Cells[row, ColunaTkc].Text;
+                            dataTKC_AnaliseINT = sheet.Cells[row, ColunaData].Text;
+
+                            
+
+                            //sheet.Cells[row, ColunaStatus].Value = "oi";
+                        }                        
+                    }
+
+                    
+
+                }
+                else
+                {
+                    textboxlog.AppendText("\n" + "\n" + "ERRO - Não foi encontrado a Aba: AnaliseINT");
+                }
+            }
+
+            //Salvando o Arquivo
+            xlPackage.Save();
+            textboxlog.AppendText("\n" + "\n" + "Processamento Finalizado");
+
+        }
+    }
+}
