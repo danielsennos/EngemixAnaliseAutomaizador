@@ -35,7 +35,9 @@ namespace EngemixAnaliseAutomaizador
             connection.Close();
 
             return Result;
-        }public string ReadDataDateTime(string queryString)
+        }
+
+        public string ReadDataDateTime(string queryString)
         {
              string Result = null;
              OracleConnection connection = new OracleConnection(_connectionString);

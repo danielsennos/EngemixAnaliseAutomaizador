@@ -90,20 +90,29 @@ namespace EngemixAnaliseAutomaizador
                             numTKC_AnaliseINT = sheet.Cells[row, ColunaTkc].Text;
                             dataTKC_AnaliseINT = sheet.Cells[row, ColunaData].Text;
 
-                            //Inicia a Análise
+                            //Seleciona os dados necessários do banco para análise
                             string queryRelIntegracao = $@"SELECT STATUS,TIME_READ ,TIME_WRITE, LATITUDE, LONGITUDE  FROM AVL_COMMAND_HISTORY 
                                                             WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
                                                             AND TIME_READ <= TO_DATE('17/02/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TIME_READ >= TO_DATE('17/02/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
-                                                            AND TICKET_CODE = '14349580'
+                                                            AND TICKET_CODE = '1434580'
                                                             ORDER BY TIME_READ ASC";
                             DataTable RelIntegracao = con.ReadDataTable(queryRelIntegracao);
-
 
                             string queryUltimaTransmissao = $"SELECT TIME_READ FROM AVL_POSITION WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444')";
                             var UltimaTransmissao = con.ReadDataDateTime(queryUltimaTransmissao);
 
+                            string queryRotaCriada = $@"SELECT ID, NAME, PERIOD_FROM, PERIOD_TO  FROM GOTO_ROUTE WHERE ID_MONITORED_POINT = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
+                                                        AND PERIOD_FROM >= TO_DATE('17/2/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
+                                                        AND PERIOD_TO <= TO_DATE('17/2/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
+                                                        AND STATUS = 'A' AND ID_CLIENT =134";
+                            DataTable RotaCriada = con.ReadDataTable(queryRotaCriada);
+
+
+                            //Encadeamento de análise
                             if (RelIntegracao.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Tíquete não Recebido"; }
+                            else if (UltimaTransmissao == null) { sheet.Cells[row, ColunaStatus].Value = "Não Transmitiu"; }
+                            else if (RotaCriada.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Rota não Encontrada - Regra Aplicação"; }
 
 
                             
