@@ -19,15 +19,41 @@ namespace EngemixAnaliseAutomaizador
              string Result = null;
              OracleConnection connection = new OracleConnection(_connectionString);
             connection.Open();
+
             OracleCommand comando = new OracleCommand(queryString, connection);
             comando.ExecuteNonQuery();
+
             OracleDataReader dr;
             dr = comando.ExecuteReader();
             dr.Read();
+
             if (dr.HasRows)
             {
                 Result = dr.GetString(0);
             }
+
+            connection.Close();
+
+            return Result;
+        }public string ReadDataDateTime(string queryString)
+        {
+             string Result = null;
+             OracleConnection connection = new OracleConnection(_connectionString);
+            connection.Open();
+
+            OracleCommand comando = new OracleCommand(queryString, connection);
+            comando.ExecuteNonQuery();
+
+            OracleDataReader dr;
+            dr = comando.ExecuteReader();
+            dr.Read();
+
+            if (dr.HasRows)
+            {
+                Result = (dr.GetDateTime(0)).ToString();
+            }
+
+            connection.Close();
 
             return Result;
         }
@@ -48,5 +74,39 @@ namespace EngemixAnaliseAutomaizador
             }
             return lista;
         }
+        public DataTable ReadDataTable(string queryString)
+        {
+            DataTable dt = new DataTable();
+            using(var conn = new OracleConnection(_connectionString))
+            {
+                OracleDataAdapter adapter = new OracleDataAdapter();
+                adapter.SelectCommand = new OracleCommand(queryString, conn);
+                adapter.Fill(dt);
+            }
+            return dt;
+        }
+
+        public int ReadDataInt(string queryString)
+        {
+            int result = 0;
+            OracleConnection conexao = new OracleConnection();
+            conexao.Open();
+
+            OracleCommand comandos = new OracleCommand();
+            comandos.ExecuteNonQuery();
+
+            OracleDataReader dr;
+            dr = comandos.ExecuteReader();
+            dr.Read();
+
+            if (dr.HasRows)
+            {
+                result = dr.GetInt32(0);
+            }
+            conexao.Close();
+
+            return result;
+        }
+
     }
 }
