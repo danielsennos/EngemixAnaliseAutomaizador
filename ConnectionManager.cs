@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Data;
-using System.Data.Common;
-using System.Data.OleDb;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,6 +30,23 @@ namespace EngemixAnaliseAutomaizador
             }
 
             return Result;
+        }
+        public ArrayList ReadDataList(string queryString)
+        {
+            ArrayList lista = new ArrayList();
+            using (var conn = new OracleConnection(_connectionString))
+            {
+                OracleDataAdapter adapter = new OracleDataAdapter();
+                adapter.SelectCommand = new OracleCommand(queryString, conn);
+                DataTable dt = new DataTable();
+                adapter.Fill(dt);
+                foreach(DataRow row in dt.Rows)
+                {
+                    lista.Add(row[0].ToString());
+                }
+
+            }
+            return lista;
         }
     }
 }

@@ -48,10 +48,10 @@ namespace EngemixAnaliseAutomaizador
             var numTKC_AnaliseINT = "0";
             var ColunaStatus = 0;
 
-            //Trata as informações do arquivo selecionado
-            FileInfo fileInfo = new FileInfo(textfilenameselect.Text);
-            ExcelPackage xlPackage = new ExcelPackage(fileInfo);
-
+            //Trata as informações do arquivo selecionado                     
+           FileInfo fileInfo = new FileInfo(textfilenameselect.Text);
+           ExcelPackage xlPackage = new ExcelPackage(fileInfo);
+            
             //Percorre as abas da planilha
             foreach (ExcelWorksheet sheet in xlPackage.Workbook.Worksheets)
             {
@@ -84,24 +84,35 @@ namespace EngemixAnaliseAutomaizador
                     for (int row = 2; row <= sheet.Dimension.Rows; row++)
                     {
                         //Verifica se a célula já não está preenchida para não sobrescrever a análise
-                        if (sheet.Cells[row, ColunaStatus].Text == "") {
+                        if (sheet.Cells[row, ColunaStatus].Text != "a") {
+                            //Pega os dados da linha a ser analisada
                             CodigoCB_AnaliseINT = sheet.Cells[row, ColunaCodigoCB].Text;
                             numTKC_AnaliseINT = sheet.Cells[row, ColunaTkc].Text;
                             dataTKC_AnaliseINT = sheet.Cells[row, ColunaData].Text;
 
-                            
+                            //Inicia a análise
+                            string queryRelIntegracao = $@"SELECT * FROM AVL_COMMAND_HISTORY 
+                                                            WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
+                                                            AND TIME_READ <= TO_DATE('17/02/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
+                                                            AND TIME_READ >= TO_DATE('17/02/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
+                                                            AND TICKET_CODE = '1434580'
+                                                            ORDER BY TIME_READ ASC";
+                            var RelIntegracao = con.ReadDataList(queryRelIntegracao);
 
-                            //sheet.Cells[row, ColunaStatus].Value = "oi";
-                        }                        
+                            string queryUltimaTransmissao = $"SELECT TIME_READ FROM AVL_POSITION WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444')";
+                            var UltimaTransmissao = con.ReadDataString(queryUltimaTransmissao);
+
+
+
+
+                            //sheet.Cells[row, ColunaStatus].Value = "CodigoCB_AnaliseINT";
+                        }
                     }
 
                     
 
                 }
-                else
-                {
-                    textboxlog.AppendText("\n" + "\n" + "ERRO - Não foi encontrado a Aba: AnaliseINT");
-                }
+
             }
 
             //Salvando o Arquivo
