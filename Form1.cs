@@ -90,22 +90,23 @@ namespace EngemixAnaliseAutomaizador
                             numTKC_AnaliseINT = sheet.Cells[row, ColunaTkc].Text;
                             dataTKC_AnaliseINT = sheet.Cells[row, ColunaData].Text;
 
-                            //Inicia a análise
-                            string queryRelIntegracao = $@"SELECT * FROM AVL_COMMAND_HISTORY 
+                            //Inicia a Análise
+                            string queryRelIntegracao = $@"SELECT STATUS,TIME_READ ,TIME_WRITE, LATITUDE, LONGITUDE  FROM AVL_COMMAND_HISTORY 
                                                             WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
                                                             AND TIME_READ <= TO_DATE('17/02/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TIME_READ >= TO_DATE('17/02/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
-                                                            AND TICKET_CODE = '1434580'
+                                                            AND TICKET_CODE = '14349580'
                                                             ORDER BY TIME_READ ASC";
-                            var RelIntegracao = con.ReadDataList(queryRelIntegracao);
+                            DataTable RelIntegracao = con.ReadDataTable(queryRelIntegracao);
+
 
                             string queryUltimaTransmissao = $"SELECT TIME_READ FROM AVL_POSITION WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444')";
-                            var UltimaTransmissao = con.ReadDataString(queryUltimaTransmissao);
+                            var UltimaTransmissao = con.ReadDataDateTime(queryUltimaTransmissao);
+
+                            if (RelIntegracao.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Tíquete não Recebido"; }
 
 
-
-
-                            //sheet.Cells[row, ColunaStatus].Value = "CodigoCB_AnaliseINT";
+                            
                         }
                     }
 
