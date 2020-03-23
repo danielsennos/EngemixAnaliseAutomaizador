@@ -91,10 +91,10 @@ namespace EngemixAnaliseAutomaizador
         public int ReadDataInt(string queryString)
         {
             int result = 0;
-            OracleConnection conexao = new OracleConnection();
+            OracleConnection conexao = new OracleConnection(_connectionString);
             conexao.Open();
 
-            OracleCommand comandos = new OracleCommand();
+            OracleCommand comandos = new OracleCommand(queryString, conexao);
             comandos.ExecuteNonQuery();
 
             OracleDataReader dr;

@@ -49,9 +49,9 @@ namespace EngemixAnaliseAutomaizador
             var ColunaStatus = 0;
 
             //Trata as informações do arquivo selecionado                     
-           FileInfo fileInfo = new FileInfo(textfilenameselect.Text);
-           ExcelPackage xlPackage = new ExcelPackage(fileInfo);
-            
+            FileInfo fileInfo = new FileInfo(textfilenameselect.Text);
+            ExcelPackage xlPackage = new ExcelPackage(fileInfo);
+
             //Percorre as abas da planilha
             foreach (ExcelWorksheet sheet in xlPackage.Workbook.Worksheets)
             {
@@ -63,7 +63,7 @@ namespace EngemixAnaliseAutomaizador
                     //Percorre as colunas da aba da planilha para obter o indice das colunas a serem usadas
                     for (int column = 1; column <= sheet.Dimension.Columns; column++)
                     {
-                        if(sheet.Cells[1, column].Text == "Código")
+                        if (sheet.Cells[1, column].Text == "Código")
                         {
                             ColunaCodigoCB = column;
                         }
@@ -74,7 +74,8 @@ namespace EngemixAnaliseAutomaizador
                         else if (sheet.Cells[1, column].Text == "Data")
                         {
                             ColunaData = column;
-                        } else if (sheet.Cells[1, column].Text == "Status")
+                        }
+                        else if (sheet.Cells[1, column].Text == "Status")
                         {
                             ColunaStatus = column;
                         }
@@ -84,7 +85,8 @@ namespace EngemixAnaliseAutomaizador
                     for (int row = 2; row <= sheet.Dimension.Rows; row++)
                     {
                         //Verifica se a célula já não está preenchida para não sobrescrever a análise
-                        if (sheet.Cells[row, ColunaStatus].Text != "a") {
+                        if (sheet.Cells[row, ColunaStatus].Text != "a")
+                        {
                             //Pega os dados da linha a ser analisada
                             CodigoCB_AnaliseINT = sheet.Cells[row, ColunaCodigoCB].Text;
                             numTKC_AnaliseINT = sheet.Cells[row, ColunaTkc].Text;
@@ -108,18 +110,52 @@ namespace EngemixAnaliseAutomaizador
                                                         AND STATUS = 'A' AND ID_CLIENT =134";
                             DataTable RotaCriada = con.ReadDataTable(queryRotaCriada);
 
+                            string queryDadosVeiculo = $@"SELECT PLACA, ID_CLIENTE, STATUS FROM AVL_VIATURA WHERE placa = 'CB3444'";
+                            DataTable DadosVeiculo = con.ReadDataTable(queryDadosVeiculo);
+
+                            object VeiculoAtivo = null;
+                            try { VeiculoAtivo = DadosVeiculo.Select("STATUS = 'A'"); } catch (Exception ex) { }
+
+                            string queryAtraso = $@"SELECT TIME_WRITE - TIME_READ FROM AVL_COMMAND_HISTORY 
+                                                    WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
+                                                    AND TIME_READ <= TO_DATE('17/2/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
+                                                    AND TIME_READ >= TO_DATE('17/2/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
+                                                    AND TICKET_CODE = '1434580'
+                                                    AND (TIME_WRITE - TIME_READ) > 0.02";
+                            int Atraso = con.ReadDataInt(queryAtraso); 
+
+                            int StatusCount = 0;
+
+
+                            List<string> ListaStatus = new List<string>();
+                            foreach (DataRow rw in RelIntegracao.Rows)
+                            {
+                                ListaStatus.Add(rw["STATUS"].ToString());
+
+                            }
+                            if (ListaStatus.Contains("TJB")) { StatusCount++; }
+                            if (ListaStatus.Contains("AJB")) { StatusCount++; }
+                            if (ListaStatus.Contains("POU")) { StatusCount++; }
+                            if (ListaStatus.Contains("TPL")) { StatusCount++; }
+                            if (ListaStatus.Contains("WSH")) { StatusCount++; }
+                            if (ListaStatus.Contains("IYD")) { StatusCount++; }
+
+                            
+
 
                             //Encadeamento de análise
                             if (RelIntegracao.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Tíquete não Recebido"; }
                             else if (UltimaTransmissao == null) { sheet.Cells[row, ColunaStatus].Value = "Não Transmitiu"; }
-                            else if (RotaCriada.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Rota não Encontrada - Regra Aplicação"; }
+                            else if (RotaCriada.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Rota não Encontrada - Regra Aplicação - Cadastro Tivit"; }
+                            else if (VeiculoAtivo == null) { sheet.Cells[row, ColunaStatus].Value = "Veículo Desativado"; }
+                            else if (StatusCount == 6) { sheet.Cells[row, ColunaStatus].Value = "Command Não Consumiu os Status"; }
 
 
-                            
+
                         }
                     }
 
-                    
+
 
                 }
 
