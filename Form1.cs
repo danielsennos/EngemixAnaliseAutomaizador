@@ -153,6 +153,9 @@ namespace EngemixAnaliseAutomaizador
                             DateTime TimeReadTJB = con.ReadDataDateTime(queryTimeReadTJB);
                             DateTime TimeReadAJB = con.ReadDataDateTime(queryTimeReadAJB);
 
+                            string queryUltimaDescarga = $@"";
+                            DateTime UltimaDescarga = con.ReadDataDateTime(queryUltimaDescarga);
+
 
 
                             //Encadeamento de análise
@@ -163,6 +166,7 @@ namespace EngemixAnaliseAutomaizador
                             else if (Atraso > 3) { sheet.Cells[row, ColunaStatus].Value = "Atraso Transmissão"; break; }
                             else if (StatusCount == 7) { sheet.Cells[row, ColunaStatus].Value = "Command Não Consumiu os Status"; break; }
                             else if (TimeReadAJB < TimeReadTJB) { sheet.Cells[row, ColunaStatus].Value = "Ordenação AJB/TJB"; break; }
+                            else if (UltimaDescarga.AddDays(3) < DateTime.Now) { sheet.Cells[row, ColunaStatus].Value = "Não detectando descarga - Verificar Equipamento"; break; }
 
 
 
