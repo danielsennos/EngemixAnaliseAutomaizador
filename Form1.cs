@@ -116,7 +116,7 @@ namespace EngemixAnaliseAutomaizador
                             object VeiculoAtivo = null;
                             try { VeiculoAtivo = DadosVeiculo.Select("STATUS = 'A'"); } catch (Exception ex) { }
 
-                            string queryAtraso = $@"SELECT TIME_WRITE - TIME_READ FROM AVL_COMMAND_HISTORY 
+                            string queryAtraso = $@"SELECT count(1) FROM AVL_COMMAND_HISTORY 
                                                     WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
                                                     AND TIME_READ <= TO_DATE('17/2/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
                                                     AND TIME_READ >= TO_DATE('17/2/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
@@ -125,14 +125,12 @@ namespace EngemixAnaliseAutomaizador
                             int Atraso = con.ReadDataInt(queryAtraso); 
 
                             int StatusCount = 0;
-
-
                             List<string> ListaStatus = new List<string>();
                             foreach (DataRow rw in RelIntegracao.Rows)
                             {
                                 ListaStatus.Add(rw["STATUS"].ToString());
-
                             }
+                            if (ListaStatus.Contains("TKC")) { StatusCount++; }
                             if (ListaStatus.Contains("TJB")) { StatusCount++; }
                             if (ListaStatus.Contains("AJB")) { StatusCount++; }
                             if (ListaStatus.Contains("POU")) { StatusCount++; }
@@ -140,15 +138,31 @@ namespace EngemixAnaliseAutomaizador
                             if (ListaStatus.Contains("WSH")) { StatusCount++; }
                             if (ListaStatus.Contains("IYD")) { StatusCount++; }
 
-                            
+                            string queryTimeReadTJB = $@"SELECT STATUS, TIME_READ, TIME_WRITE, LATITUDE, LONGITUDE  FROM AVL_COMMAND_HISTORY
+                                                            WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
+                                                            AND TIME_READ <= TO_DATE('17/02/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
+                                                            AND TIME_READ >= TO_DATE('17/02/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
+                                                            AND TICKET_CODE = '1434580'
+                                                            ORDER BY TIME_READ ASC";
+                            string queryTimeReadAJB = $@"SELECT TIME_READ FROM AVL_COMMAND_HISTORY
+                                                            WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
+                                                            AND TIME_READ <= TO_DATE('17/02/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
+                                                            AND TIME_READ >= TO_DATE('17/02/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
+                                                            AND TICKET_CODE = '1434580'
+                                                            ORDER BY TIME_READ ASC";
+                            DateTime TimeReadTJB = con.ReadDataDateTime(queryTimeReadTJB);
+                            DateTime TimeReadAJB = con.ReadDataDateTime(queryTimeReadAJB);
+
 
 
                             //Encadeamento de análise
-                            if (RelIntegracao.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Tíquete não Recebido"; }
-                            else if (UltimaTransmissao == null) { sheet.Cells[row, ColunaStatus].Value = "Não Transmitiu"; }
-                            else if (RotaCriada.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Rota não Encontrada - Regra Aplicação - Cadastro Tivit"; }
-                            else if (VeiculoAtivo == null) { sheet.Cells[row, ColunaStatus].Value = "Veículo Desativado"; }
-                            else if (StatusCount == 6) { sheet.Cells[row, ColunaStatus].Value = "Command Não Consumiu os Status"; }
+                            if (RelIntegracao.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Tíquete não Recebido"; break; }
+                            else if (UltimaTransmissao == null) { sheet.Cells[row, ColunaStatus].Value = "Não Transmitiu"; break; } 
+                            else if (RotaCriada.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Rota não Encontrada - Regra Aplicação - Cadastro Tivit"; break; }
+                            else if (VeiculoAtivo == null) { sheet.Cells[row, ColunaStatus].Value = "Veículo Desativado"; break; }
+                            else if (Atraso > 3) { sheet.Cells[row, ColunaStatus].Value = "Atraso Transmissão"; break; }
+                            else if (StatusCount == 7) { sheet.Cells[row, ColunaStatus].Value = "Command Não Consumiu os Status"; break; }
+                            else if (TimeReadAJB < TimeReadTJB) { sheet.Cells[row, ColunaStatus].Value = "Ordenação AJB/TJB"; break; }
 
 
 

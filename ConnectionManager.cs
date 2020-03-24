@@ -37,9 +37,9 @@ namespace EngemixAnaliseAutomaizador
             return Result;
         }
 
-        public string ReadDataDateTime(string queryString)
+        public DateTime ReadDataDateTime(string queryString)
         {
-             string Result = null;
+            DateTime Result = new DateTime();
              OracleConnection connection = new OracleConnection(_connectionString);
             connection.Open();
 
@@ -52,7 +52,7 @@ namespace EngemixAnaliseAutomaizador
 
             if (dr.HasRows)
             {
-                Result = (dr.GetDateTime(0)).ToString();
+                Result = dr.GetDateTime(0);
             }
 
             connection.Close();
