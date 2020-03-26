@@ -94,32 +94,32 @@ namespace EngemixAnaliseAutomaizador
 
                             //Seleciona os dados necessários do banco para análise
                             string queryRelIntegracao = $@"SELECT STATUS,TIME_READ ,TIME_WRITE, LATITUDE, LONGITUDE  FROM AVL_COMMAND_HISTORY 
-                                                            WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
-                                                            AND TIME_READ <= TO_DATE('17/02/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
-                                                            AND TIME_READ >= TO_DATE('17/02/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
-                                                            AND TICKET_CODE = '1434580'
+                                                            WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
+                                                            AND TIME_READ <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
+                                                            AND TIME_READ >= TO_DATE('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
+                                                            AND TICKET_CODE = '{numTKC_AnaliseINT}'
                                                             ORDER BY TIME_READ ASC";
                             DataTable RelIntegracao = con.ReadDataTable(queryRelIntegracao);
 
-                            string queryUltimaTransmissao = $"SELECT TIME_READ FROM AVL_POSITION WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444')";
+                            string queryUltimaTransmissao = $"SELECT TIME_READ FROM AVL_POSITION WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}')";
                             var UltimaTransmissao = con.ReadDataDateTime(queryUltimaTransmissao);
 
-                            string queryRotaCriada = $@"SELECT ID, NAME, PERIOD_FROM, PERIOD_TO  FROM GOTO_ROUTE WHERE ID_MONITORED_POINT = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
-                                                        AND PERIOD_FROM >= TO_DATE('17/2/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
-                                                        AND PERIOD_TO <= TO_DATE('17/2/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
+                            string queryRotaCriada = $@"SELECT ID, NAME, PERIOD_FROM, PERIOD_TO  FROM GOTO_ROUTE WHERE ID_MONITORED_POINT = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
+                                                        AND PERIOD_FROM >= TO_DATE('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
+                                                        AND PERIOD_TO <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
                                                         AND STATUS = 'A' AND ID_CLIENT =134";
                             DataTable RotaCriada = con.ReadDataTable(queryRotaCriada);
 
-                            string queryDadosVeiculo = $@"SELECT PLACA, ID_CLIENTE, STATUS FROM AVL_VIATURA WHERE placa = 'CB3444'";
+                            string queryDadosVeiculo = $@"SELECT PLACA, ID_CLIENTE, STATUS FROM AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}'";
                             DataTable DadosVeiculo = con.ReadDataTable(queryDadosVeiculo);
 
                             object VeiculoAtivo = null;
                             try { VeiculoAtivo = DadosVeiculo.Select("STATUS = 'A'"); } catch (Exception ex) { }
 
                             string queryAtraso = $@"SELECT count(1) FROM AVL_COMMAND_HISTORY 
-                                                    WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
-                                                    AND TIME_READ <= TO_DATE('17/2/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
-                                                    AND TIME_READ >= TO_DATE('17/2/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
+                                                    WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
+                                                    AND TIME_READ <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
+                                                    AND TIME_READ >= TO_DATE('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
                                                     AND TICKET_CODE = '1434580'
                                                     AND (TIME_WRITE - TIME_READ) > 0.02";
                             int Atraso = con.ReadDataInt(queryAtraso); 
@@ -139,16 +139,16 @@ namespace EngemixAnaliseAutomaizador
                             if (ListaStatus.Contains("IYD")) { StatusCount++; }
 
                             string queryTimeReadTJB = $@"SELECT TIME_READ FROM AVL_COMMAND_HISTORY
-                                                            WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
-                                                            AND TIME_READ <= TO_DATE('17/02/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
-                                                            AND TIME_READ >= TO_DATE('17/02/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
+                                                            WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
+                                                            AND TIME_READ <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
+                                                            AND TIME_READ >= TO_DATE('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TICKET_CODE = '1434580'
                                                             AND STATUS = 'TJB'
                                                             ORDER BY TIME_READ ASC";
                             string queryTimeReadAJB = $@"SELECT TIME_READ FROM AVL_COMMAND_HISTORY
-                                                            WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
-                                                            AND TIME_READ <= TO_DATE('17/02/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
-                                                            AND TIME_READ >= TO_DATE('17/02/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
+                                                            WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
+                                                            AND TIME_READ <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
+                                                            AND TIME_READ >= TO_DATE('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TICKET_CODE = '1434580'
                                                             AND STATUS = 'AJB'
                                                             ORDER BY TIME_READ ASC";
@@ -159,13 +159,13 @@ namespace EngemixAnaliseAutomaizador
                                                             FROM AVL_STATUS_COMMAND cmd 
                                                             INNER JOIN avl_viatura av ON cmd.ID_VIATURA = av.id 
                                                             WHERE cmd.STATUS = 6
-                                                            AND av.placa  = 'CB3444'
+                                                            AND av.placa  = 'CB{CodigoCB_AnaliseINT}'
                                                             GROUP BY av.PLACA";
                             DateTime UltimaDescarga = con.ReadDataDateTime(queryUltimaDescarga);
                             string queryLATLONGJOB = $@"SELECT LATITUDE, LONGITUDE FROM AVL_COMMAND_HISTORY
-                                                            WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
-                                                            AND TIME_READ <= TO_DATE('17/02/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
-                                                            AND TIME_READ >= TO_DATE('17/02/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
+                                                            WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
+                                                            AND TIME_READ <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
+                                                            AND TIME_READ >= TO_DATE('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TICKET_CODE = '1434580'
                                                             AND STATUS = 'AJB'";
                             var LATLONGJOB = con.ReadDataCollum_to_List(queryLATLONGJOB);
