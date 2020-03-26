@@ -168,7 +168,7 @@ namespace EngemixAnaliseAutomaizador
                                                             AND TIME_READ >= TO_DATE('17/02/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TICKET_CODE = '1434580'
                                                             AND STATUS = 'AJB'";
-                            var LATLONGJOB = con.ReadDataList(queryLATLONGJOB);
+                            var LATLONGJOB = con.ReadDataCollum_to_List(queryLATLONGJOB);
 
 
 
@@ -185,7 +185,8 @@ namespace EngemixAnaliseAutomaizador
                             else if (TimeReadAJB < TimeReadTJB) { sheet.Cells[row, ColunaStatus].Value = "Ordenação AJB/TJB"; break; }
                             //else if (UltimaDescarga.AddDays(3) < DateTime.Now) { sheet.Cells[row, ColunaStatus].Value = "Não detectando descarga - Verificar Equipamento"; break; }
                             else if (!ListaStatus.Contains("POU")) { sheet.Cells[row, ColunaStatus].Value = "Não detectou descarga para o tíquete"; break; }
-                            else if (!ListaStatus.Contains("TKC_PRÉ")) { sheet.Cells[row, ColunaStatus].Value = "Pré-Tíquete"; break; }
+                            else if (ListaStatus.Contains("TKC_PRÉ")) { sheet.Cells[row, ColunaStatus].Value = "Pré-Tíquete"; break; }
+                            else if (LATLONGJOB.Contains("0")) { sheet.Cells[row, ColunaStatus].Value = "Coordenadas da Obra não definidas"; break; }
 
 
 

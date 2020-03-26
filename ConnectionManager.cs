@@ -75,6 +75,26 @@ namespace EngemixAnaliseAutomaizador
 
             }
             return lista;
+        }        
+        public ArrayList ReadDataCollum_to_List(string queryString)
+        {
+            ArrayList lista = new ArrayList();
+            using (var conn = new OracleConnection(_connectionString))
+            {
+                OracleDataAdapter adapter = new OracleDataAdapter();
+                adapter.SelectCommand = new OracleCommand(queryString, conn);
+                DataTable dt = new DataTable();
+                adapter.Fill(dt);
+                foreach(DataColumn col in dt.Columns)
+                {
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        lista.Add(row[0].ToString());
+                    }
+                }
+
+            }
+            return lista;
         }
         public DataTable ReadDataTable(string queryString)
         {
