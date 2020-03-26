@@ -33,7 +33,6 @@ C:\GIT\EngemixAnaliseAutomaizador_V0.01\bin\x64\Debug\DocumentFormat.OpenXml.xml
 C:\GIT\EngemixAnaliseAutomaizador_V0.01\bin\x64\Debug\EPPlus.xml
 C:\GIT\EngemixAnaliseAutomaizador_V0.01\bin\x64\Debug\OfficeOpenXml.Core.ExcelPackage.pdb
 C:\GIT\EngemixAnaliseAutomaizador_V0.01\bin\x64\Debug\System.IO.Packaging.xml
-C:\GIT\EngemixAnaliseAutomaizador_V0.01\obj\x64\Debug\EngemixAnaliseAutomaizador_V0.01.csprojAssemblyReference.cache
 C:\GIT\EngemixAnaliseAutomaizador_V0.01\obj\x64\Debug\EngemixAnaliseAutomaizador.Form1.resources
 C:\GIT\EngemixAnaliseAutomaizador_V0.01\obj\x64\Debug\EngemixAnaliseAutomaizador_V0._01.Properties.Resources.resources
 C:\GIT\EngemixAnaliseAutomaizador_V0.01\obj\x64\Debug\EngemixAnaliseAutomaizador_V0.01.csproj.GenerateResource.cache

@@ -13,6 +13,7 @@ namespace EngemixAnaliseAutomaizador
         //private readonly string _connectionString = "Data Source=SYNDES;User ID=avl2;password=avldesenv";
 
         private readonly string _connectionString = "Data Source=AVL2PROD;User ID=avl2;password=avlsynapsis";
+
         OracleConnection objConn = null;
         OracleTransaction objTransacao = null;
 
