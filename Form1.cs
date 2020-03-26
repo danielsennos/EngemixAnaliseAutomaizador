@@ -63,7 +63,7 @@ namespace EngemixAnaliseAutomaizador
                     //Percorre as colunas da aba da planilha para obter o indice das colunas a serem usadas
                     for (int column = 1; column <= sheet.Dimension.Columns; column++)
                     {
-                        if (sheet.Cells[1, column].Text == "Código")
+                        if (sheet.Cells[1, column].Text == "CODIGO_BETONEIRA")
                         {
                             ColunaCodigoCB = column;
                         }
@@ -138,23 +138,40 @@ namespace EngemixAnaliseAutomaizador
                             if (ListaStatus.Contains("WSH")) { StatusCount++; }
                             if (ListaStatus.Contains("IYD")) { StatusCount++; }
 
-                            string queryTimeReadTJB = $@"SELECT STATUS, TIME_READ, TIME_WRITE, LATITUDE, LONGITUDE  FROM AVL_COMMAND_HISTORY
+                            string queryTimeReadTJB = $@"SELECT TIME_READ FROM AVL_COMMAND_HISTORY
                                                             WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
                                                             AND TIME_READ <= TO_DATE('17/02/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TIME_READ >= TO_DATE('17/02/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TICKET_CODE = '1434580'
+                                                            AND STATUS = 'TJB'
                                                             ORDER BY TIME_READ ASC";
                             string queryTimeReadAJB = $@"SELECT TIME_READ FROM AVL_COMMAND_HISTORY
                                                             WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
                                                             AND TIME_READ <= TO_DATE('17/02/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TIME_READ >= TO_DATE('17/02/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TICKET_CODE = '1434580'
+                                                            AND STATUS = 'AJB'
                                                             ORDER BY TIME_READ ASC";
                             DateTime TimeReadTJB = con.ReadDataDateTime(queryTimeReadTJB);
                             DateTime TimeReadAJB = con.ReadDataDateTime(queryTimeReadAJB);
 
-                            string queryUltimaDescarga = $@"";
+                            string queryUltimaDescarga = $@"SELECT max(cmd.DATA_CREATE)
+                                                            FROM AVL_STATUS_COMMAND cmd 
+                                                            INNER JOIN avl_viatura av ON cmd.ID_VIATURA = av.id 
+                                                            WHERE cmd.STATUS = 6
+                                                            AND av.placa  = 'CB3444'
+                                                            GROUP BY av.PLACA";
                             DateTime UltimaDescarga = con.ReadDataDateTime(queryUltimaDescarga);
+                            string queryLATLONGJOB = $@"SELECT LATITUDE, LONGITUDE FROM AVL_COMMAND_HISTORY
+                                                            WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB3444') 
+                                                            AND TIME_READ <= TO_DATE('17/02/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
+                                                            AND TIME_READ >= TO_DATE('17/02/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
+                                                            AND TICKET_CODE = '1434580'
+                                                            AND STATUS = 'AJB'";
+                            var LATLONGJOB = con.ReadDataList(queryLATLONGJOB);
+
+
+
 
 
 
@@ -163,10 +180,12 @@ namespace EngemixAnaliseAutomaizador
                             else if (UltimaTransmissao == null) { sheet.Cells[row, ColunaStatus].Value = "Não Transmitiu"; break; } 
                             else if (RotaCriada.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Rota não Encontrada - Regra Aplicação - Cadastro Tivit"; break; }
                             else if (VeiculoAtivo == null) { sheet.Cells[row, ColunaStatus].Value = "Veículo Desativado"; break; }
-                            else if (Atraso > 3) { sheet.Cells[row, ColunaStatus].Value = "Atraso Transmissão"; break; }
+                            //else if (Atraso > 3) { sheet.Cells[row, ColunaStatus].Value = "Atraso Transmissão"; break; }
                             else if (StatusCount == 7) { sheet.Cells[row, ColunaStatus].Value = "Command Não Consumiu os Status"; break; }
                             else if (TimeReadAJB < TimeReadTJB) { sheet.Cells[row, ColunaStatus].Value = "Ordenação AJB/TJB"; break; }
-                            else if (UltimaDescarga.AddDays(3) < DateTime.Now) { sheet.Cells[row, ColunaStatus].Value = "Não detectando descarga - Verificar Equipamento"; break; }
+                            //else if (UltimaDescarga.AddDays(3) < DateTime.Now) { sheet.Cells[row, ColunaStatus].Value = "Não detectando descarga - Verificar Equipamento"; break; }
+                            else if (!ListaStatus.Contains("POU")) { sheet.Cells[row, ColunaStatus].Value = "Não detectou descarga para o tíquete"; break; }
+                            else if (!ListaStatus.Contains("TKC_PRÉ")) { sheet.Cells[row, ColunaStatus].Value = "Pré-Tíquete"; break; }
 
 
 

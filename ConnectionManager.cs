@@ -81,9 +81,11 @@ namespace EngemixAnaliseAutomaizador
             DataTable dt = new DataTable();
             using(var conn = new OracleConnection(_connectionString))
             {
+                
                 OracleDataAdapter adapter = new OracleDataAdapter();
                 adapter.SelectCommand = new OracleCommand(queryString, conn);
                 adapter.Fill(dt);
+                
             }
             return dt;
         }
