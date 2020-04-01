@@ -92,7 +92,7 @@ namespace EngemixAnaliseAutomaizador
                             numTKC_AnaliseINT = sheet.Cells[row, ColunaTkc].Text;
                             dataTKC_AnaliseINT = sheet.Cells[row, ColunaData].Text;
 
-                            //Seleciona os dados necessários do banco para análise
+                            #region Dados necessários do banco para análise
                             string queryRelIntegracao = $@"SELECT STATUS,TIME_READ ,TIME_WRITE, LATITUDE, LONGITUDE FROM GOTO_ENGEMIX.AVL_COMMAND_HISTORY 
                                                             WHERE ID_VIATURA = (SELECT id FROM GOTO_ENGEMIX.AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
                                                             AND TIME_READ <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
@@ -170,26 +170,28 @@ namespace EngemixAnaliseAutomaizador
                                                             AND TICKET_CODE = '{numTKC_AnaliseINT}'
                                                             AND STATUS = 'AJB'";
                             var LATLONGJOB = con.ReadDataCollum_to_List(queryLATLONGJOB);
+                            #endregion
 
 
 
 
 
-
-                            //Encadeamento de análise
-                            if (RelIntegracao.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Tíquete não Recebido"; break; }
-                            else if (UltimaTransmissao == null) { sheet.Cells[row, ColunaStatus].Value = "Não Transmitiu"; break; } 
-                            else if (RotaCriada.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Rota não Encontrada - Regra Aplicação - Cadastro Tivit"; break; }
-                            else if (VeiculoAtivo == null) { sheet.Cells[row, ColunaStatus].Value = "Veículo Desativado"; break; }
-                            else if (Atraso > 3) { sheet.Cells[row, ColunaStatus].Value = "Atraso Transmissão"; break; }
-                            else if (StatusCount == 7) { sheet.Cells[row, ColunaStatus].Value = "Command Não Consumiu os Status"; break; }
-                            else if (TimeReadAJB < TimeReadTJB) { sheet.Cells[row, ColunaStatus].Value = "Ordenação AJB/TJB"; break; }
-                            else if (UltimaDescarga.AddDays(3) < DateTime.Now) { sheet.Cells[row, ColunaStatus].Value = "Não detectando descarga - Verificar Equipamento"; break; }
-                            else if (!ListaStatus.Contains("POU")) { sheet.Cells[row, ColunaStatus].Value = "Não detectou descarga para o tíquete"; break; }
-                            else if (ListaStatus.Contains("TKC_PRÉ")) { sheet.Cells[row, ColunaStatus].Value = "Pré-Tíquete"; break; }
-                            else if (LATLONGJOB.Contains("0")) { sheet.Cells[row, ColunaStatus].Value = "Coordenadas da Obra não definidas"; break; }
-
-
+                            #region Encadeamento de análise
+                            {
+                                if (RelIntegracao.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Tíquete não Recebido"; }
+                                else if (UltimaTransmissao == null) { sheet.Cells[row, ColunaStatus].Value = "Não Transmitiu"; }
+                                else if (RotaCriada.Rows.Count == 0 || RotaCriada == null) { sheet.Cells[row, ColunaStatus].Value = "Rota não Encontrada - Regra Aplicação - Cadastro Tivit"; break; }
+                                else if (VeiculoAtivo == null) { sheet.Cells[row, ColunaStatus].Value = "Veículo Desativado"; }
+                                else if (Atraso > 3) { sheet.Cells[row, ColunaStatus].Value = "Atraso Transmissão"; }
+                                else if (StatusCount >= 7) { sheet.Cells[row, ColunaStatus].Value = "Command Não Consumiu os Status"; }
+                                else if (TimeReadAJB < TimeReadTJB) { sheet.Cells[row, ColunaStatus].Value = "Ordenação AJB/TJB"; }
+                                else if (UltimaDescarga.AddDays(3) < DateTime.Now) { sheet.Cells[row, ColunaStatus].Value = "Não detectando descarga - Verificar Equipamento"; }
+                                else if (ListaStatus.Contains("TKC") && ListaStatus.Count == 1) { sheet.Cells[row, ColunaStatus].Value = "Somente TKC"; }
+                                else if (!ListaStatus.Contains("POU")) { sheet.Cells[row, ColunaStatus].Value = "Não detectou descarga para o tíquete"; }
+                                else if (ListaStatus.Contains("TKC_PRÉ")) { sheet.Cells[row, ColunaStatus].Value = "Pré-Tíquete"; }
+                                else if (LATLONGJOB.Contains("0")) { sheet.Cells[row, ColunaStatus].Value = "Coordenadas da Obra não definidas"; }
+                            }
+                            #endregion
 
                         }
                     }
