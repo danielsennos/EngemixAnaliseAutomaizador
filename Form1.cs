@@ -94,18 +94,18 @@ namespace EngemixAnaliseAutomaizador
 
                             //Seleciona os dados necessários do banco para análise
                             string queryRelIntegracao = $@"SELECT STATUS,TIME_READ ,TIME_WRITE, LATITUDE, LONGITUDE FROM GOTO_ENGEMIX.AVL_COMMAND_HISTORY 
-                                                            WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
+                                                            WHERE ID_VIATURA = (SELECT id FROM GOTO_ENGEMIX.AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
                                                             AND TIME_READ <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TIME_READ >= TO_DATE('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TICKET_CODE = '{numTKC_AnaliseINT}'
                                                             ORDER BY TIME_READ ASC";
                             DataTable RelIntegracao = con.ReadDataTable(queryRelIntegracao);
 
-                            string queryUltimaTransmissao = $"SELECT TIME_READ FROM GOTO_ENGEMIX.AVL_POSITION WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}')";
+                            string queryUltimaTransmissao = $"SELECT TIME_READ FROM GOTO_ENGEMIX.AVL_POSITION WHERE ID_VIATURA = (SELECT id FROM GOTO_ENGEMIX.AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}')";
                             var UltimaTransmissao = con.ReadDataDateTime(queryUltimaTransmissao);
 
                             string queryRotaCriada = $@"SELECT ID, NAME, PERIOD_FROM, PERIOD_TO  FROM GOTO_ENGEMIX.GOTO_ROUTE 
-                                                        WHERE ID_MONITORED_POINT = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
+                                                        WHERE ID_MONITORED_POINT = (SELECT id FROM GOTO_ENGEMIX.AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
                                                         AND PERIOD_FROM >= TO_DATE('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
                                                         AND PERIOD_TO <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
                                                         AND STATUS = 'A' AND ID_CLIENT =134";
@@ -118,10 +118,10 @@ namespace EngemixAnaliseAutomaizador
                             try { VeiculoAtivo = DadosVeiculo.Select("STATUS = 'A'"); } catch (Exception ex) { }
 
                             string queryAtraso = $@"SELECT count(1) FROM GOTO_ENGEMIX.AVL_COMMAND_HISTORY 
-                                                    WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
+                                                    WHERE ID_VIATURA = (SELECT id FROM GOTO_ENGEMIX.AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
                                                     AND TIME_READ <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
                                                     AND TIME_READ >= TO_DATE('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
-                                                    AND TICKET_CODE = '1434580'
+                                                    AND TICKET_CODE = '{numTKC_AnaliseINT}'
                                                     AND (TIME_WRITE - TIME_READ) > 0.02";
                             int Atraso = con.ReadDataInt(queryAtraso); 
 
@@ -140,17 +140,17 @@ namespace EngemixAnaliseAutomaizador
                             if (ListaStatus.Contains("IYD")) { StatusCount++; }
 
                             string queryTimeReadTJB = $@"SELECT TIME_READ FROM GOTO_ENGEMIX.AVL_COMMAND_HISTORY
-                                                            WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
+                                                            WHERE ID_VIATURA = (SELECT id FROM GOTO_ENGEMIX.AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
                                                             AND TIME_READ <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TIME_READ >= TO_DATE('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
-                                                            AND TICKET_CODE = '1434580'
+                                                            AND TICKET_CODE = '{numTKC_AnaliseINT}'
                                                             AND STATUS = 'TJB'
                                                             ORDER BY TIME_READ ASC";
                             string queryTimeReadAJB = $@"SELECT TIME_READ FROM GOTO_ENGEMIX.AVL_COMMAND_HISTORY
-                                                            WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
+                                                            WHERE ID_VIATURA = (SELECT id FROM GOTO_ENGEMIX.AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
                                                             AND TIME_READ <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TIME_READ >= TO_DATE('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
-                                                            AND TICKET_CODE = '1434580'
+                                                            AND TICKET_CODE = '{numTKC_AnaliseINT}'
                                                             AND STATUS = 'AJB'
                                                             ORDER BY TIME_READ ASC";
                             DateTime TimeReadTJB = con.ReadDataDateTime(queryTimeReadTJB);
@@ -164,10 +164,10 @@ namespace EngemixAnaliseAutomaizador
                                                             GROUP BY av.PLACA";
                             DateTime UltimaDescarga = con.ReadDataDateTime(queryUltimaDescarga);
                             string queryLATLONGJOB = $@"SELECT LATITUDE, LONGITUDE FROM GOTO_ENGEMIX.AVL_COMMAND_HISTORY
-                                                            WHERE ID_VIATURA = (SELECT id FROM AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
+                                                            WHERE ID_VIATURA = (SELECT id FROM GOTO_ENGEMIX.AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
                                                             AND TIME_READ <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TIME_READ >= TO_DATE('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
-                                                            AND TICKET_CODE = '1434580'
+                                                            AND TICKET_CODE = '{numTKC_AnaliseINT}'
                                                             AND STATUS = 'AJB'";
                             var LATLONGJOB = con.ReadDataCollum_to_List(queryLATLONGJOB);
 
