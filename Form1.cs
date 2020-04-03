@@ -93,13 +93,40 @@ namespace EngemixAnaliseAutomaizador
                             dataTKC_AnaliseINT = sheet.Cells[row, ColunaData].Text;
 
                             #region Dados necessários do banco para análise
-                            string queryRelIntegracao = $@"SELECT STATUS,TIME_READ ,TIME_WRITE, LATITUDE, LONGITUDE FROM GOTO_ENGEMIX.AVL_COMMAND_HISTORY 
+
+                            string queryTableTKC = $@"SELECT TICKET_CODE, STATUS, TIME_READ ,TIME_WRITE, LATITUDE, LONGITUDE FROM GOTO_ENGEMIX.AVL_COMMAND_HISTORY 
+                                                            WHERE ID_VIATURA = (SELECT id FROM GOTO_ENGEMIX.AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
+                                                            AND TIME_READ >= TO_DATE('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
+                                                            AND TIME_READ <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss') 
+                                                            AND STATUS = 'TKC'
+                                                            ORDER BY TIME_READ ASC";
+                            DataTable TableTKC = con.ReadDataTable(queryTableTKC);
+
+                            List<string> ListaTKC = new List<string>();
+                            foreach (DataRow rw in TableTKC.Rows)
+                            {
+                                ListaTKC.Add(rw["TICKET_CODE"].ToString());
+                                ListaTKC.Add(rw["TIME_READ"].ToString());
+
+                            }
+
+                            var TempoInicioTKC = ListaTKC[(ListaTKC.IndexOf(numTKC_AnaliseINT) + 1)];
+
+                            string TempoFimTKC = "";
+                            try { TempoFimTKC = ListaTKC[(ListaTKC.IndexOf(numTKC_AnaliseINT) + 3)]; } catch (Exception ex) { };
+                            if (TempoFimTKC == "") { TempoFimTKC = $"{dataTKC_AnaliseINT}/2020 23:59:59"; }
+
+
+
+
+
+                            string queryRelIntegracaoTKC = $@"SELECT STATUS,TIME_READ ,TIME_WRITE, LATITUDE, LONGITUDE FROM GOTO_ENGEMIX.AVL_COMMAND_HISTORY 
                                                             WHERE ID_VIATURA = (SELECT id FROM GOTO_ENGEMIX.AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
                                                             AND TIME_READ <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TIME_READ >= TO_DATE('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
                                                             AND TICKET_CODE = '{numTKC_AnaliseINT}'
                                                             ORDER BY TIME_READ ASC";
-                            DataTable RelIntegracao = con.ReadDataTable(queryRelIntegracao);
+                            DataTable RelIntegracaoTKC = con.ReadDataTable(queryRelIntegracaoTKC);
 
                             string queryUltimaTransmissao = $"SELECT TIME_READ FROM GOTO_ENGEMIX.AVL_POSITION WHERE ID_VIATURA = (SELECT id FROM GOTO_ENGEMIX.AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}')";
                             var UltimaTransmissao = con.ReadDataDateTime(queryUltimaTransmissao);
@@ -127,7 +154,7 @@ namespace EngemixAnaliseAutomaizador
 
                             int StatusCount = 0;
                             List<string> ListaStatus = new List<string>();
-                            foreach (DataRow rw in RelIntegracao.Rows)
+                            foreach (DataRow rw in RelIntegracaoTKC.Rows)
                             {
                                 ListaStatus.Add(rw["STATUS"].ToString());
                             }
@@ -178,7 +205,7 @@ namespace EngemixAnaliseAutomaizador
 
                             #region Encadeamento de análise
                             {
-                                if (RelIntegracao.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Tíquete não Recebido"; }
+                                if (RelIntegracaoTKC.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Tíquete não Recebido"; }
                                 else if (UltimaTransmissao == null) { sheet.Cells[row, ColunaStatus].Value = "Não Transmitiu"; }
                                 else if (RotaCriada.Rows.Count == 0 || RotaCriada == null) { sheet.Cells[row, ColunaStatus].Value = "Rota não Encontrada - Regra Aplicação - Cadastro Tivit"; break; }
                                 else if (VeiculoAtivo == null) { sheet.Cells[row, ColunaStatus].Value = "Veículo Desativado"; }
