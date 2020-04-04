@@ -110,16 +110,11 @@ namespace EngemixAnaliseAutomaizador
 
                             }
 
-                            var TempoInicioTKC = ListaTKC[(ListaTKC.IndexOf(numTKC_AnaliseINT) + 1)];
+                            DateTime TempoInicioTKC = Convert.ToDateTime(ListaTKC[(ListaTKC.IndexOf(numTKC_AnaliseINT) + 1)]);
+                            DateTime TempoFimTKC;
+                            try { TempoFimTKC = Convert.ToDateTime(ListaTKC[(ListaTKC.IndexOf(numTKC_AnaliseINT) + 3)]); } catch { TempoFimTKC = Convert.ToDateTime($"{dataTKC_AnaliseINT}/2020 23:59:59"); };                         
 
-                            string TempoFimTKC = "";
-                            try { TempoFimTKC = ListaTKC[(ListaTKC.IndexOf(numTKC_AnaliseINT) + 3)]; } catch (Exception ex) { };
-                            if (TempoFimTKC == "") { TempoFimTKC = $"{dataTKC_AnaliseINT}/2020 23:59:59"; }
-
-
-
-
-
+                              
                             string queryRelIntegracaoTKC = $@"SELECT STATUS,TIME_READ ,TIME_WRITE, LATITUDE, LONGITUDE FROM GOTO_ENGEMIX.AVL_COMMAND_HISTORY 
                                                             WHERE ID_VIATURA = (SELECT id FROM GOTO_ENGEMIX.AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
                                                             AND TIME_READ <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
@@ -142,13 +137,13 @@ namespace EngemixAnaliseAutomaizador
                             DataTable DadosVeiculo = con.ReadDataTable(queryDadosVeiculo);
 
                             object VeiculoAtivo = null;
-                            try { VeiculoAtivo = DadosVeiculo.Select("STATUS = 'A'"); } catch (Exception ex) { }
+                            try { VeiculoAtivo = DadosVeiculo.Select("STATUS = 'A'"); } catch { }
 
-                            string queryAtraso = $@"SELECT count(1) FROM GOTO_ENGEMIX.AVL_COMMAND_HISTORY 
+                            
+                            string queryAtraso = $@"SELECT count(1) FROM GOTO_ENGEMIX.AVL_POSITION_HISTORY{TempoFimTKC.ToString("yyyyMM")} 
                                                     WHERE ID_VIATURA = (SELECT id FROM GOTO_ENGEMIX.AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
-                                                    AND TIME_READ <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
-                                                    AND TIME_READ >= TO_DATE('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
-                                                    AND TICKET_CODE = '{numTKC_AnaliseINT}'
+                                                    AND TIME_READ >= TO_DATE('{TempoInicioTKC}', 'dd/MM/yyyy HH24:mi:ss')
+                                                    AND TIME_READ <= TO_DATE('{TempoFimTKC}', 'dd/MM/yyyy HH24:mi:ss')
                                                     AND (TIME_WRITE - TIME_READ) > 0.02";
                             int Atraso = con.ReadDataInt(queryAtraso); 
 
