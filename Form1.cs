@@ -145,21 +145,21 @@ namespace EngemixAnaliseAutomaizador
                                                     AND TIME_READ >= TO_DATE('{TempoInicioTKC}', 'dd/MM/yyyy HH24:mi:ss')
                                                     AND TIME_READ <= TO_DATE('{TempoFimTKC}', 'dd/MM/yyyy HH24:mi:ss')
                                                     AND (TIME_WRITE - TIME_READ) > 0.02";
-                            int Atraso = con.ReadDataInt(queryAtraso); 
+                            int Atraso = con.ReadDataInt(queryAtraso);
 
-                            int StatusCount = 0;
+                            string queryTransmissao_para_Tiquete = $@"SELECT count(1) FROM GOTO_ENGEMIX.AVL_POSITION_HISTORY{TempoFimTKC.ToString("yyyyMM")} 
+                                                    WHERE ID_VIATURA = (SELECT id FROM GOTO_ENGEMIX.AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
+                                                    AND TIME_READ >= TO_DATE('{TempoInicioTKC}', 'dd/MM/yyyy HH24:mi:ss')
+                                                    AND TIME_READ <= TO_DATE('{TempoFimTKC}', 'dd/MM/yyyy HH24:mi:ss')
+                                                    AND IGNITION = 1";
+                            int Transmissao_para_Tiquete = con.ReadDataInt(queryTransmissao_para_Tiquete);
+
+                            
                             List<string> ListaStatus = new List<string>();
                             foreach (DataRow rw in RelIntegracaoTKC.Rows)
                             {
                                 ListaStatus.Add(rw["STATUS"].ToString());
                             }
-                            if (ListaStatus.Contains("TKC")) { StatusCount++; }
-                            if (ListaStatus.Contains("TJB")) { StatusCount++; }
-                            if (ListaStatus.Contains("AJB")) { StatusCount++; }
-                            if (ListaStatus.Contains("POU")) { StatusCount++; }
-                            if (ListaStatus.Contains("TPL")) { StatusCount++; }
-                            if (ListaStatus.Contains("WSH")) { StatusCount++; }
-                            if (ListaStatus.Contains("IYD")) { StatusCount++; }
 
                             string queryTimeReadTJB = $@"SELECT TIME_READ FROM GOTO_ENGEMIX.AVL_COMMAND_HISTORY
                                                             WHERE ID_VIATURA = (SELECT id FROM GOTO_ENGEMIX.AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
@@ -202,15 +202,17 @@ namespace EngemixAnaliseAutomaizador
                             {
                                 if (RelIntegracaoTKC.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Tíquete não Recebido"; }
                                 else if (UltimaTransmissao == null) { sheet.Cells[row, ColunaStatus].Value = "Não Transmitiu"; }
+                                else if (Transmissao_para_Tiquete == 0 ) { sheet.Cells[row, ColunaStatus].Value = "Não Transmitiu para oo Tíquete"; }
                                 else if (RotaCriada.Rows.Count == 0 || RotaCriada == null) { sheet.Cells[row, ColunaStatus].Value = "Rota não Encontrada - Regra Aplicação - Cadastro Tivit"; break; }
                                 else if (VeiculoAtivo == null) { sheet.Cells[row, ColunaStatus].Value = "Veículo Desativado"; }
                                 else if (Atraso > 3) { sheet.Cells[row, ColunaStatus].Value = "Atraso Transmissão"; }
-                                else if (StatusCount >= 7) { sheet.Cells[row, ColunaStatus].Value = "Command Não Consumiu os Status"; }
+                                else if (ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB") && ListaStatus.Contains("POU") && ListaStatus.Contains("TPL") && ListaStatus.Contains("WSH") && ListaStatus.Contains("IYD")) { sheet.Cells[row, ColunaStatus].Value = "Command Não Consumiu os Status"; }
                                 else if (TimeReadAJB < TimeReadTJB) { sheet.Cells[row, ColunaStatus].Value = "Ordenação AJB/TJB"; }
                                 else if (UltimaDescarga.AddDays(3) < DateTime.Now) { sheet.Cells[row, ColunaStatus].Value = "Não detectando descarga - Verificar Equipamento"; }
                                 else if (ListaStatus.Contains("TKC") && ListaStatus.Count == 1) { sheet.Cells[row, ColunaStatus].Value = "Somente TKC"; }
-                                else if (!ListaStatus.Contains("POU")) { sheet.Cells[row, ColunaStatus].Value = "Não detectou descarga para o tíquete"; }
-                                else if (ListaStatus.Contains("TKC_PRÉ")) { sheet.Cells[row, ColunaStatus].Value = "Pré-Tíquete"; }
+                                else if (!ListaStatus.Contains("POU") && ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB")) { sheet.Cells[row, ColunaStatus].Value = "Não detectou descarga para o tíquete"; }
+                                else if (ListaStatus.Contains("TKC_PRÉ") && ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB") && ListaStatus.Contains("POU")) { sheet.Cells[row, ColunaStatus].Value = "Pré-Tíquete"; }
+                                else if (ListaStatus.Contains("TKC_PRÉ") && ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB") && ListaStatus.Contains("POU") && ListaStatus.Contains("TPL")) { sheet.Cells[row, ColunaStatus].Value = "Pré-Tíquete após TPL - Regra Aplicação"; }
                                 else if (LATLONGJOB.Contains("0")) { sheet.Cells[row, ColunaStatus].Value = "Coordenadas da Obra não definidas"; }
                             }
                             #endregion
