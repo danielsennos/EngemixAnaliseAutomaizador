@@ -88,12 +88,14 @@ namespace EngemixAnaliseAutomaizador
                 adapter.SelectCommand = new OracleCommand(queryString, conn);
                 DataTable dt = new DataTable();
                 adapter.Fill(dt);
+                int count = 0;
                 foreach(DataColumn col in dt.Columns)
-                {
+                {                    
                     foreach (DataRow row in dt.Rows)
-                    {
-                        lista.Add(row[0].ToString());
+                    {                        
+                        lista.Add(row[count].ToString());                        
                     }
+                    count++;
                 }
 
             }

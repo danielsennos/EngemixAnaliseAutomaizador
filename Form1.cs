@@ -206,16 +206,18 @@ namespace EngemixAnaliseAutomaizador
                             var y = ((LATLONGJOB[1]).ToString().Replace(",", "."));
                            
 
-                            var queryProximidadeObra = $@"SELECT * FROM ( SELECT aph.id, av.placa, aph.time_read data, aph.out_area, NVL(rua, '') rua,
+                            var queryProximidadeObra = $@"SELECT count(1) FROM ( SELECT aph.id, av.placa, aph.time_read data, aph.out_area, NVL(rua, '') rua,
                                                         NVL(numero, '') numero, NVL(bairro, '') bairro, NVL(municipio, '') municipio, 
                                                         ROUND(GOTO_ENGEMIX.avl_calc_dist_coord({((LATLONGJOB[0]).ToString().Replace(",", "."))}, {((LATLONGJOB[1]).ToString().Replace(",", "."))}, aph.pos_y, aph.pos_x), 2) AS distancia, 
                                                         aph.pos_y latitude, aph.pos_x longitude, aph.pos_y LAT, aph.pos_x LON
-                                                        FROM (SELECT * FROM GOTO_ENGEMIX.AVL_POSITION_HISTORY_202004) aph
+                                                        FROM (SELECT * FROM GOTO_ENGEMIX.AVL_POSITION_HISTORY_{TempoFimTKC.ToString("yyyyMM")}) aph
                                                         JOIN GOTO_ENGEMIX.avl_viatura av ON av.id = aph.id_viatura
                                                         WHERE
-                                                        aph.time_read BETWEEN TO_DATE ('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss') AND TO_DATE ('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
-                                                        AND av.placa = 'CB3437' AND aph.gps  = 1 AND av.status='A')
+                                                        aph.time_read BETWEEN TO_DATE ('{TempoInicioTKC}', 'dd/MM/yyyy HH24:mi:ss') AND TO_DATE ('{TempoFimTKC}', 'dd/MM/yyyy HH24:mi:ss')
+                                                        AND av.placa = 'CB{CodigoCB_AnaliseINT}' AND aph.gps  = 1 AND av.status='A')
                                                         WHERE distancia <= (SELECT RAY/1000 FROM GOTO_ENGEMIX.AVL_STATUS_COMMAND WHERE TICKET_CODE ='{numTKC_AnaliseINT}' AND STATUS = 1)";
+                            int ProximidadeObra = con.ReadDataInt(queryProximidadeObra);
+
                             #endregion
 
 
@@ -239,6 +241,7 @@ namespace EngemixAnaliseAutomaizador
                                 else if (ListaStatus.Contains("TKC_PRÉ") && ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB") && ListaStatus.Contains("POU")) { sheet.Cells[row, ColunaStatus].Value = "Pré-Tíquete"; }
                                 else if (ListaStatus.Contains("TKC_PRÉ") && ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB") && ListaStatus.Contains("POU") && ListaStatus.Contains("TPL")) { sheet.Cells[row, ColunaStatus].Value = "Pré-Tíquete após TPL - Regra Aplicação"; }
                                 else if (LATLONGJOB[0].ToString() == "" || LATLONGJOB[0].ToString() == "0" || LATLONGJOB[1].ToString() == "" || LATLONGJOB[1].ToString() == "0") { sheet.Cells[row, ColunaStatus].Value = "Coordenadas da Obra não definidas"; }
+                                else if (ProximidadeObra == 0) { sheet.Cells[row, ColunaStatus].Value = "Veículo não foi para Obra (Local do TKC)"; }
 
                             }
                             #endregion
