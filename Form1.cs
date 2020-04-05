@@ -63,7 +63,7 @@ namespace EngemixAnaliseAutomaizador
                     //Percorre as colunas da aba da planilha para obter o indice das colunas a serem usadas
                     for (int column = 1; column <= sheet.Dimension.Columns; column++)
                     {
-                        if (sheet.Cells[1, column].Text == "CODIGO_BETONEIRA")
+                        if (sheet.Cells[1, column].Text == "Código")
                         {
                             ColunaCodigoCB = column;
                         }
@@ -85,7 +85,7 @@ namespace EngemixAnaliseAutomaizador
                     for (int row = 2; row <= sheet.Dimension.Rows; row++)
                     {
                         //Verifica se a célula já não está preenchida para não sobrescrever a análise
-                        if (sheet.Cells[row, ColunaStatus].Text != "a")
+                        if (sheet.Cells[row, ColunaStatus].Text != "a" && sheet.Cells[row, ColunaCodigoCB].Text != "")
                         {
                             //Pega os dados da linha a ser analisada
                             CodigoCB_AnaliseINT = sheet.Cells[row, ColunaCodigoCB].Text;
@@ -193,16 +193,12 @@ namespace EngemixAnaliseAutomaizador
                                                             AND av.placa  = 'CB{CodigoCB_AnaliseINT}'
                                                             GROUP BY av.PLACA";
                             DateTime UltimaDescarga = con.ReadDataDateTime(queryUltimaDescarga);
-                            string queryLATLONGJOB = $@"SELECT LATITUDE, LONGITUDE FROM GOTO_ENGEMIX.AVL_COMMAND_HISTORY
-                                                            WHERE ID_VIATURA = (SELECT id FROM GOTO_ENGEMIX.AVL_VIATURA WHERE placa = 'CB{CodigoCB_AnaliseINT}') 
-                                                            AND TIME_READ <= TO_DATE('{dataTKC_AnaliseINT}/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')
-                                                            AND TIME_READ >= TO_DATE('{dataTKC_AnaliseINT}/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
-                                                            AND TICKET_CODE = '{numTKC_AnaliseINT}'
-                                                            AND STATUS = 'AJB'";
+                            string queryLATLONGJOB = $@"SELECT LATITUDEJOB, LONGITUDEJOB FROM GOTO_ENGEMIX.AVL_STATUS_COMMAND 
+                                                           WHERE TICKET_CODE = '1465158' 
+                                                           AND STATUS = 1
+                                                           AND DATA_CREATE >= TO_DATE('31/3/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
+                                                           AND DATA_CREATE <= TO_DATE('31/3/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')";
                             var LATLONGJOB = con.ReadDataCollum_to_List(queryLATLONGJOB);
-
-                            var x = ((LATLONGJOB[0]).ToString().Replace(",", "."));
-                            var y = ((LATLONGJOB[1]).ToString().Replace(",", "."));
 
 
                             var queryProximidadeObra = $@"SELECT count(1) FROM ( SELECT aph.id, av.placa, aph.time_read data, aph.out_area, NVL(rua, '') rua,
@@ -225,10 +221,12 @@ namespace EngemixAnaliseAutomaizador
                             #region Encadeamento de análise
                             {
                                 if (RelIntegracaoTKC.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Tíquete não Recebido"; }
-                                else if (UltimaTransmissao < DateTime.Now.AddDays(-1)) { sheet.Cells[row, ColunaStatus].Value = "Não Transmitiu"; }
-                                else if (Transmissao_para_Tiquete == 0 && UltimaTransmissao < DateTime.Now.AddDays(-1)) { sheet.Cells[row, ColunaStatus].Value = "Sem Transmissão para o Tíquete"; }
+                                else if (UltimaTransmissao < TempoInicioTKC.AddDays(-1)) { sheet.Cells[row, ColunaStatus].Value = "Não Transmitiu"; }
+                                //Menor de que o dia da análise
+                                else if (Transmissao_para_Tiquete == 0 && UltimaTransmissao < TempoInicioTKC.AddDays(-1)) { sheet.Cells[row, ColunaStatus].Value = "Sem Transmissão para o Tíquete"; }
                                 else if (RotaCriada.Rows.Count == 0 || RotaCriada == null) { sheet.Cells[row, ColunaStatus].Value = "Rota não Encontrada - Regra Aplicação - Cadastro Tivit"; }
                                 else if (VeiculoAtivo == null) { sheet.Cells[row, ColunaStatus].Value = "Veículo Desativado"; }
+                                //quantos atrasos interfere nos status? Verificar se há todos os status se não ver se tem atraso
                                 else if (Atraso > 3) { sheet.Cells[row, ColunaStatus].Value = "Atraso Transmissão"; }
                                 else if (ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB") && ListaStatus.Contains("POU") && ListaStatus.Contains("TPL") && ListaStatus.Contains("WSH") && ListaStatus.Contains("IYD")) { sheet.Cells[row, ColunaStatus].Value = "Command Não Consumiu os Status"; }
                                 else if (TimeReadAJB < TimeReadTJB) { sheet.Cells[row, ColunaStatus].Value = "Ordenação AJB/TJB"; }
@@ -242,7 +240,7 @@ namespace EngemixAnaliseAutomaizador
                                 else if (!ListaStatus.Contains("POU") && ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB")) { sheet.Cells[row, ColunaStatus].Value = "Não detectou descarga para o tíquete"; }
                                 else if (ListaStatus.Contains("TKC_PRÉ") && ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB") && ListaStatus.Contains("POU")) { sheet.Cells[row, ColunaStatus].Value = "Pré-Tíquete"; }
                                 else if (ListaStatus.Contains("TKC_PRÉ") && ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB") && ListaStatus.Contains("POU") && ListaStatus.Contains("TPL")) { sheet.Cells[row, ColunaStatus].Value = "Pré-Tíquete após TPL - Regra Aplicação"; }
-                                
+
                             }
                             #endregion
 
