@@ -238,7 +238,7 @@ namespace EngemixAnaliseAutomaizador
                                 else if (!ListaStatus.Contains("POU") && ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB")) { sheet.Cells[row, ColunaStatus].Value = "Não detectou descarga para o tíquete"; }
                                 else if (ListaStatus.Contains("TKC_PRÉ") && ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB") && ListaStatus.Contains("POU")) { sheet.Cells[row, ColunaStatus].Value = "Pré-Tíquete"; }
                                 else if (ListaStatus.Contains("TKC_PRÉ") && ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB") && ListaStatus.Contains("POU") && ListaStatus.Contains("TPL")) { sheet.Cells[row, ColunaStatus].Value = "Pré-Tíquete após TPL - Regra Aplicação"; }
-                                else if (LATJOB.Equals("") || LATJOB.Equals("0") || LONGJOB.Equals("") || LONGJOB.Equals("0")) { sheet.Cells[row, ColunaStatus].Value = "Coordenadas da Obra não definidas"; }
+                                else if (LATLONGJOB[0].ToString() == "" || LATLONGJOB[0].ToString() == "0" || LATLONGJOB[1].ToString() == "" || LATLONGJOB[1].ToString() == "0") { sheet.Cells[row, ColunaStatus].Value = "Coordenadas da Obra não definidas"; }
 
                             }
                             #endregion
