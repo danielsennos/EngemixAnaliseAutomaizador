@@ -50,7 +50,8 @@ namespace EngemixAnaliseAutomaizador
 
             //Trata as informações do arquivo selecionado                     
             FileInfo fileInfo = new FileInfo(textfilenameselect.Text);
-            ExcelPackage xlPackage = new ExcelPackage(fileInfo);
+            ExcelPackage xlPackage = new ExcelPackage();
+            try { xlPackage = new ExcelPackage(fileInfo); } catch (Exception ex) { MessageBox.Show(ex.ToString()); };
 
             //Percorre as abas da planilha
             foreach (ExcelWorksheet sheet in xlPackage.Workbook.Worksheets)
@@ -219,28 +220,29 @@ namespace EngemixAnaliseAutomaizador
 
 
                             #region Encadeamento de análise
+
                             {
                                 if (RelIntegracaoTKC.Rows.Count == 0) { sheet.Cells[row, ColunaStatus].Value = "Tíquete não Recebido"; }
                                 else if (UltimaTransmissao < TempoInicioTKC.AddDays(-1)) { sheet.Cells[row, ColunaStatus].Value = "Não Transmitiu"; }
-                                //Menor de que o dia da análise
                                 else if (Transmissao_para_Tiquete == 0 && UltimaTransmissao < TempoInicioTKC.AddDays(-1)) { sheet.Cells[row, ColunaStatus].Value = "Sem Transmissão para o Tíquete"; }
                                 else if (RotaCriada.Rows.Count == 0 || RotaCriada == null) { sheet.Cells[row, ColunaStatus].Value = "Rota não Encontrada - Regra Aplicação - Cadastro Tivit"; }
                                 else if (VeiculoAtivo == null) { sheet.Cells[row, ColunaStatus].Value = "Veículo Desativado"; }
-                                //quantos atrasos interfere nos status? Verificar se há todos os status se não ver se tem atraso
-                                else if (Atraso > 3) { sheet.Cells[row, ColunaStatus].Value = "Atraso Transmissão"; }
+                                //quantos atrasos interfere nos status? 
+                                else if (Atraso > 3 && Velocidade_para_Tiquete > 5 && UltimaDescarga > TempoInicioTKC.AddDays(-3)) { sheet.Cells[row, ColunaStatus].Value = "Atraso Transmissão"; }
                                 else if (ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB") && ListaStatus.Contains("POU") && ListaStatus.Contains("TPL") && ListaStatus.Contains("WSH") && ListaStatus.Contains("IYD")) { sheet.Cells[row, ColunaStatus].Value = "Command Não Consumiu os Status"; }
+                                //verificar se a lista contem ajb e tjb
                                 else if (TimeReadAJB < TimeReadTJB) { sheet.Cells[row, ColunaStatus].Value = "Ordenação AJB/TJB"; }
                                 else if (ListaStatus.Contains("CAN")) { sheet.Cells[row, ColunaStatus].Value = "Recebeu CAN"; }
                                 //Melhorar para caso a cb não estiver em operação
-                                else if (UltimaDescarga.AddDays(3) < DateTime.Now) { sheet.Cells[row, ColunaStatus].Value = "Não detectando descarga - Verificar Equipamento"; }
+                                else if (UltimaDescarga < TempoInicioTKC.AddDays(-3)) { sheet.Cells[row, ColunaStatus].Value = "Não detectando descarga - Verificar Equipamento"; }
                                 else if ((TempoFimTKC - TempoInicioTKC) < new TimeSpan(0, 20, 0)) { sheet.Cells[row, ColunaStatus].Value = "Não saiu da Base - Tíquete fechado com < 20min"; }
-                                else if (ListaStatus.Contains("TKC") && ListaStatus.Count == 1 && Velocidade_para_Tiquete < 2) { sheet.Cells[row, ColunaStatus].Value = "Não Saiu da Base (Somente TKC, Pouco Registro de Velocidade)"; }
+                                else if (ListaStatus.Contains("TKC") && ListaStatus.Count == 1 && Velocidade_para_Tiquete < 5) { sheet.Cells[row, ColunaStatus].Value = "Não Saiu da Base (Somente TKC, Pouco Registro de Velocidade)"; }
                                 else if (LATLONGJOB[0].ToString() == "" || LATLONGJOB[0].ToString() == "0" || LATLONGJOB[1].ToString() == "" || LATLONGJOB[1].ToString() == "0") { sheet.Cells[row, ColunaStatus].Value = "Coordenadas da Obra não definidas"; }
                                 else if (ProximidadeObra == 0) { sheet.Cells[row, ColunaStatus].Value = "Veículo não foi para Obra (Local do TKC)"; }
                                 else if (!ListaStatus.Contains("POU") && ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB")) { sheet.Cells[row, ColunaStatus].Value = "Não detectou descarga para o tíquete"; }
                                 else if (ListaStatus.Contains("TKC_PRÉ") && ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB") && ListaStatus.Contains("POU")) { sheet.Cells[row, ColunaStatus].Value = "Pré-Tíquete"; }
                                 else if (ListaStatus.Contains("TKC_PRÉ") && ListaStatus.Contains("TJB") && ListaStatus.Contains("AJB") && ListaStatus.Contains("POU") && ListaStatus.Contains("TPL")) { sheet.Cells[row, ColunaStatus].Value = "Pré-Tíquete após TPL - Regra Aplicação"; }
-
+                                
                             }
                             #endregion
 
@@ -253,9 +255,14 @@ namespace EngemixAnaliseAutomaizador
 
             }
 
-            //Salvando o Arquivo
-            xlPackage.Save();
-            textboxlog.AppendText("\n" + "\n" + "Processamento Finalizado");
+            //Salvando o Arquivo 
+            if (xlPackage.File != null)
+            {
+                xlPackage.Save();
+                textboxlog.AppendText("\n" + "\n" + "Processamento Finalizado");
+                MessageBox.Show("Processamento Finalizado");
+
+            }
 
         }
     }
