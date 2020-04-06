@@ -51,7 +51,7 @@ namespace EngemixAnaliseAutomaizador
             //Trata as informações do arquivo selecionado                     
             FileInfo fileInfo = new FileInfo(textfilenameselect.Text);
             ExcelPackage xlPackage = new ExcelPackage();
-            try { xlPackage = new ExcelPackage(fileInfo); } catch (Exception ex) { MessageBox.Show(ex.ToString()); };
+            try { xlPackage = new ExcelPackage(fileInfo); } catch (Exception ex) { MessageBox.Show(ex.Message.ToString()); };
 
             //Percorre as abas da planilha
             foreach (ExcelWorksheet sheet in xlPackage.Workbook.Worksheets)
