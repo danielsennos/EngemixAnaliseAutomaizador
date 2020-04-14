@@ -75,6 +75,7 @@ namespace EngemixAnaliseAutomaizador
                 {
                     lista.Add(row[0].ToString());
                 }
+                conn.Close();
 
             }
             return lista;
@@ -97,7 +98,7 @@ namespace EngemixAnaliseAutomaizador
                     }
                     count++;
                 }
-
+                conn.Close();
             }
             return lista;
         }
@@ -110,7 +111,8 @@ namespace EngemixAnaliseAutomaizador
                 OracleDataAdapter adapter = new OracleDataAdapter();
                 adapter.SelectCommand = new OracleCommand(queryString, conn);
                 adapter.Fill(dt);
-                
+
+                conn.Close();
             }
             return dt;
         }
