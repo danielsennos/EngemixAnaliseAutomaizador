@@ -35,7 +35,6 @@
             this.painelinferior = new System.Windows.Forms.Panel();
             this.textboxlog = new System.Windows.Forms.RichTextBox();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.FluxoAutomatizador_Link = new System.Windows.Forms.LinkLabel();
             this.painelsup.SuspendLayout();
             this.painelinferior.SuspendLayout();
             this.SuspendLayout();
@@ -98,31 +97,19 @@
             // 
             this.openFileDialog.FileName = "openFileDialog";
             // 
-            // FluxoAutomatizador_Link
-            // 
-            this.FluxoAutomatizador_Link.AutoSize = true;
-            this.FluxoAutomatizador_Link.Location = new System.Drawing.Point(12, 60);
-            this.FluxoAutomatizador_Link.Name = "FluxoAutomatizador_Link";
-            this.FluxoAutomatizador_Link.Size = new System.Drawing.Size(79, 13);
-            this.FluxoAutomatizador_Link.TabIndex = 2;
-            this.FluxoAutomatizador_Link.TabStop = true;
-            this.FluxoAutomatizador_Link.Text = "Visualizar Fluxo";
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(621, 385);
-            this.Controls.Add(this.FluxoAutomatizador_Link);
             this.Controls.Add(this.painelinferior);
             this.Controls.Add(this.painelsup);
-            this.Name = "Automatizador Análise Engemix";
+            this.Name = "Form1";
             this.Text = "Análise Ofensores";
             this.painelsup.ResumeLayout(false);
             this.painelsup.PerformLayout();
             this.painelinferior.ResumeLayout(false);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -135,7 +122,6 @@
         private System.Windows.Forms.RichTextBox textboxlog;
         private System.Windows.Forms.TextBox textfilenameselect;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
-        private System.Windows.Forms.LinkLabel FluxoAutomatizador_Link;
     }
 }
 

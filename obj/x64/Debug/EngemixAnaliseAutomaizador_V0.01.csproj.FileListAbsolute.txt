@@ -40,4 +40,3 @@ C:\GIT\EngemixAnaliseAutomaizador_V0.01\obj\x64\Debug\EngemixAnaliseAutomaizador
 C:\GIT\EngemixAnaliseAutomaizador_V0.01\obj\x64\Debug\EngemixAnaliseAutomaizador_V0.01.csproj.CopyComplete
 C:\GIT\EngemixAnaliseAutomaizador_V0.01\obj\x64\Debug\EngemixAnaliseAutomaizador_V0.01.exe
 C:\GIT\EngemixAnaliseAutomaizador_V0.01\obj\x64\Debug\EngemixAnaliseAutomaizador_V0.01.pdb
-C:\GIT\EngemixAnaliseAutomaizador_V0.01\obj\x64\Debug\EngemixAnaliseAutomaizador_V0.01.csprojAssemblyReference.cache
