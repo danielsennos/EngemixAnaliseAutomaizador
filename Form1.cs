@@ -195,10 +195,10 @@ namespace EngemixAnaliseAutomaizador
                                                             GROUP BY av.PLACA";
                             DateTime UltimaDescarga = con.ReadDataDateTime(queryUltimaDescarga);
                             string queryLATLONGJOB = $@"SELECT LATITUDEJOB, LONGITUDEJOB FROM GOTO_ENGEMIX.AVL_STATUS_COMMAND 
-                                                           WHERE TICKET_CODE = '1465158' 
+                                                           WHERE TICKET_CODE = '{numTKC_AnaliseINT}' 
                                                            AND STATUS = 1
-                                                           AND DATA_CREATE >= TO_DATE('31/3/2020 00:00:00', 'dd/MM/yyyy HH24:mi:ss')
-                                                           AND DATA_CREATE <= TO_DATE('31/3/2020 23:59:59', 'dd/MM/yyyy HH24:mi:ss')";
+                                                           AND DATA_CREATE >= TO_DATE('{TempoInicioTKC}', 'dd/MM/yyyy HH24:mi:ss')
+                                                           AND DATA_CREATE <= TO_DATE('{TempoFimTKC}', 'dd/MM/yyyy HH24:mi:ss')";
                             var LATLONGJOB = con.ReadDataCollum_to_List(queryLATLONGJOB);
 
 
