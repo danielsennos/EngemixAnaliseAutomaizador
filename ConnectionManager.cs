@@ -10,9 +10,9 @@ namespace EngemixAnaliseAutomaizador
 {
     public class ConnectionManager
     {
-        //private readonly string _connectionString = "Data Source=SYNDES;User ID=avl2;password=avldesenv";
+        //private readonly string _connectionString = "Data Source=SYNDES;User ID=avl2;password=";
 
-        private readonly string _connectionString = "Data Source=AVL2PROD;User ID=avl2;password=avlsynapsis";
+        private readonly string _connectionString = "Data Source=AVL2PROD;User ID=avl2;password=";
 
         OracleConnection objConn = null;
         OracleTransaction objTransacao = null;
